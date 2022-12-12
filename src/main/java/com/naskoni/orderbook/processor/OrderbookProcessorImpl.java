@@ -26,6 +26,8 @@ public class OrderbookProcessorImpl implements OrderbookProcessor {
       CryptoProcessor cryptoProcessor = cryptoProcessorMap.get(pairName);
       if (cryptoProcessor != null) {
         cryptoProcessor.process(asksAndBids);
+      } else {
+        log.error("CryptoProcessor with name '{}' cannot be found.", pairName);
       }
     } catch (Exception e) {
       log.error(e.getMessage(), e);
