@@ -21,10 +21,6 @@ public class ValuesProcessorImpl implements ValuesProcessor {
       asksUpdates.forEach(u -> processUpdate(u, asksMap));
     }
 
-    if (updateMessage.containsKey("b") && updateMessage.containsKey("a")) {
-      updateMessage.get("a"); // todo remove
-    }
-
     if (updateMessage.containsKey("b")) {
       List<List<String>> bidsUpdates = updateMessage.get("b");
       bidsUpdates.forEach(u -> processUpdate(u, bidsMap));
@@ -40,7 +36,7 @@ public class ValuesProcessorImpl implements ValuesProcessor {
       container.put(price, volume);
     }
   }
-  
+
   private void putToContainer(List<String> values, SortedMap<BigDecimal, String> container) {
     if (values.size() > 1) {
       container.put(getPrice(values), getVolume(values));

@@ -1,5 +1,9 @@
 package com.naskoni.orderbook.processor;
 
+import static com.naskoni.orderbook.processor.Constants.PRICE;
+import static com.naskoni.orderbook.processor.Constants.PRICE_BD;
+import static com.naskoni.orderbook.processor.Constants.VALUE;
+import static com.naskoni.orderbook.processor.Constants.VOLUME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,12 +17,7 @@ import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
 class ValuesProcessorImplTest {
-
-  public static final String PRICE = "1266.88000";
-  public static final BigDecimal PRICE_BD = new BigDecimal(PRICE);
-  public static final String VOLUME = "102.36729861";
-  public static final List<String> VALUE = List.of(PRICE, VOLUME);
-
+  
   private ValuesProcessor underTest = new ValuesProcessorImpl();
 
   @Test
