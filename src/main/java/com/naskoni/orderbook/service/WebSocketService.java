@@ -56,11 +56,6 @@ public class WebSocketService implements CommandLineRunner {
     }
 
     @Override
-    public void onOpen(WebSocket webSocket) {
-      WebSocket.Listener.super.onOpen(webSocket);
-    }
-
-    @Override
     public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
       processMessage(data.toString());
       return WebSocket.Listener.super.onText(webSocket, data, last);
