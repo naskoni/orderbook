@@ -2,19 +2,20 @@ package com.naskoni.orderbook.service;
 
 import com.naskoni.orderbook.processor.OrderbookProcessor;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.WebSocket;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.socket.WebSocketMessage;
+import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient;
+import org.springframework.web.reactive.socket.client.WebSocketClient;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Signal;
 
 @Slf4j
-@Component
+@Service
 public class WebSocketService implements CommandLineRunner {
 
   @Value("${websocket.url}")
@@ -23,51 +24,29 @@ public class WebSocketService implements CommandLineRunner {
   @Value("${websocket.subscription}")
   private String webSocketSubscription;
 
+  @Value("${websocket.client.duration}")
+  private long duration;
+
   @Autowired
   private OrderbookProcessor orderbookProcessor;
 
   public void run(String... args) {
-    try {
-      CountDownLatch latch = new CountDownLatch(1);
-      HttpClient client = HttpClient.newHttpClient();
-      CompletableFuture<WebSocket> ws = client
-          .newWebSocketBuilder()
-          .buildAsync(URI.create(websocketUrl), new WebSocketListener(orderbookProcessor));
-
-      WebSocket webSocket = ws.get();
-      webSocket.sendText(webSocketSubscription, true);
-      latch.await();
-    } catch (InterruptedException e) {
-      log.error("WebSocket creation failed, the thread was interrupted: ", e);
-      Thread.currentThread().interrupt();
-    } catch (Exception e) {
-      log.error("WebSocket creation failed: ", e);
-    }
+    WebSocketClient client = new ReactorNettyWebSocketClient();
+    client.execute(
+            URI.create(websocketUrl),
+            session -> session.send(
+                    Mono.just(session.textMessage((webSocketSubscription))))
+                .thenMany(session.receive()
+                    .map(WebSocketMessage::getPayloadAsText)
+                    .doOnEach(this::processMessage))
+                .then())
+        .block(Duration.ofMinutes(duration));
   }
 
-  private static class WebSocketListener implements WebSocket.Listener {
-
-    private final OrderbookProcessor orderbookProcessor;
-
-    public WebSocketListener(OrderbookProcessor orderbookProcessor) {
-      this.orderbookProcessor = orderbookProcessor;
-    }
-
-    @Override
-    public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-      processMessage(data.toString());
-      return WebSocket.Listener.super.onText(webSocket, data, last);
-    }
-
-    @Override
-    public void onError(WebSocket webSocket, Throwable error) {
-      log.error("Error occured! " + error);
-    }
-
-    private void processMessage(String message) {
-      if (message.startsWith("[")) { // this will discard subscription and heartbeat messages
-        orderbookProcessor.processMessage(message);
-      }
+  private void processMessage(Signal<String> signalMessage) {
+    String message = signalMessage.get();
+    if (message.startsWith("[")) { // this will discard subscription and heartbeat messages
+      orderbookProcessor.processMessage(message);
     }
   }
 }
