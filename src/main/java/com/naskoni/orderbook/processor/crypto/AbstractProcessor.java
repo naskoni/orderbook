@@ -10,6 +10,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Every class that extends this abstract class should have @Component("{pair}"). Format of each pair is "A/B", where A and B are
+ * ISO 4217-A3 for standardized assets and popular unique symbol if not standardized.
+ */
 public abstract class AbstractProcessor implements CryptoProcessor {
 
   @Autowired
