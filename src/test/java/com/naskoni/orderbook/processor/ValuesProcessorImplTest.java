@@ -4,6 +4,7 @@ import static com.naskoni.orderbook.processor.Constants.PRICE;
 import static com.naskoni.orderbook.processor.Constants.PRICE_BD;
 import static com.naskoni.orderbook.processor.Constants.VALUE;
 import static com.naskoni.orderbook.processor.Constants.VOLUME;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -17,7 +18,7 @@ import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
 class ValuesProcessorImplTest {
-  
+
   private ValuesProcessor underTest = new ValuesProcessorImpl();
 
   @Test
@@ -189,5 +190,21 @@ class ValuesProcessorImplTest {
 
     assertEquals(0, asksMap.size());
     assertEquals(0, bidsMap.size());
+  }
+
+  @Test
+  void test_nullChecks() {
+    SortedMap<BigDecimal, String> asksMap = new TreeMap<>();
+    SortedMap<BigDecimal, String> bidsMap = new TreeMap<>();
+    Map<String, List<List<String>>> updateMessage = new HashMap<>();
+    List<List<String>> values = new ArrayList<>();
+    values.add(VALUE);
+
+    assertThatThrownBy(() -> underTest.process(null, values)).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> underTest.process(asksMap, null)).isInstanceOf(NullPointerException.class);
+
+    assertThatThrownBy(() -> underTest.update(null, bidsMap, updateMessage));
+    assertThatThrownBy(() -> underTest.update(asksMap, null, updateMessage));
+    assertThatThrownBy(() -> underTest.update(asksMap, bidsMap, null));
   }
 }

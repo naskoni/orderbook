@@ -7,17 +7,15 @@ import java.net.http.WebSocket;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class WebSocketService implements CommandLineRunner {
-
-  Logger logger = LoggerFactory.getLogger(WebSocketService.class);
 
   @Value("${websocket.url}")
   private String websocketUrl;
@@ -40,10 +38,10 @@ public class WebSocketService implements CommandLineRunner {
       webSocket.sendText(webSocketSubscription, true);
       latch.await();
     } catch (InterruptedException e) {
-      logger.error("WebSocket creation failed, the thread was interrupted: ", e);
+      log.error("WebSocket creation failed, the thread was interrupted: ", e);
       Thread.currentThread().interrupt();
     } catch (Exception e) {
-      logger.error("WebSocket creation failed: ", e);
+      log.error("WebSocket creation failed: ", e);
     }
   }
 
@@ -63,7 +61,7 @@ public class WebSocketService implements CommandLineRunner {
 
     @Override
     public void onError(WebSocket webSocket, Throwable error) {
-      System.out.println("Error occured! " + error.getMessage());
+      log.error("Error occured! " + error);
     }
 
     private void processMessage(String message) {

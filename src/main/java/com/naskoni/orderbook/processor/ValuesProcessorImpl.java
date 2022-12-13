@@ -1,5 +1,7 @@
 package com.naskoni.orderbook.processor;
 
+import static java.util.Objects.requireNonNull;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +13,18 @@ public class ValuesProcessorImpl implements ValuesProcessor {
 
   @Override
   public void process(SortedMap<BigDecimal, String> container, List<List<String>> values) {
+    requireNonNull(container);
+    requireNonNull(values);
+
     values.forEach(v -> putToContainer(v, container));
   }
 
   @Override
   public void update(SortedMap<BigDecimal, String> asksMap, SortedMap<BigDecimal, String> bidsMap, Map<String, List<List<String>>> updateMessage) {
+    requireNonNull(asksMap);
+    requireNonNull(bidsMap);
+    requireNonNull(updateMessage);
+
     if (updateMessage.containsKey("a")) {
       List<List<String>> asksUpdates = updateMessage.get("a");
       asksUpdates.forEach(u -> processUpdate(u, asksMap));
